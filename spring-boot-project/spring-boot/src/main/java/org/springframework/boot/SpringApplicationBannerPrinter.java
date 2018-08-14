@@ -85,6 +85,7 @@ class SpringApplicationBannerPrinter {
 		return DEFAULT_BANNER;
 	}
 
+	// 获取banner.txt
 	private Banner getTextBanner(Environment environment) {
 		String location = environment.getProperty(BANNER_LOCATION_PROPERTY,
 				DEFAULT_BANNER_LOCATION);
@@ -95,12 +96,14 @@ class SpringApplicationBannerPrinter {
 		return null;
 	}
 
+	// 获取图片格式的banner
 	private Banner getImageBanner(Environment environment) {
 		String location = environment.getProperty(BANNER_IMAGE_LOCATION_PROPERTY);
 		if (StringUtils.hasLength(location)) {
 			Resource resource = this.resourceLoader.getResource(location);
 			return resource.exists() ? new ImageBanner(resource) : null;
 		}
+		// 支持{"gif", "jpg", "png"}这三种类型的banner图片格式，将其转化为resource
 		for (String ext : IMAGE_EXTENSION) {
 			Resource resource = this.resourceLoader.getResource("banner." + ext);
 			if (resource.exists()) {
@@ -138,6 +141,7 @@ class SpringApplicationBannerPrinter {
 		@Override
 		public void printBanner(Environment environment, Class<?> sourceClass,
 				PrintStream out) {
+			// 循环打印banner，图片格式优先于txt
 			for (Banner banner : this.banners) {
 				banner.printBanner(environment, sourceClass, out);
 			}
