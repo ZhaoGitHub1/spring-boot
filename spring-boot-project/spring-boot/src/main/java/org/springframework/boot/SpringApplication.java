@@ -160,7 +160,7 @@ public class SpringApplication {
 	 * environments.
 	 */
 	public static final String DEFAULT_CONTEXT_CLASS = "org.springframework.context."
-			+ "annotation.AnnotationConfigApplicationContext";
+				+ "annotation.AnnotationConfigApplicationContext";
 
 	/**
 	 * The class name of application context that will be used by default for web
@@ -272,10 +272,10 @@ public class SpringApplication {
 		this.primarySources = new LinkedHashSet<>(Arrays.asList(primarySources));
 		// 推断应用类型
 		this.webApplicationType = deduceWebApplicationType();
-		// 加载ApplicationContextInitializer系列初始化器（从spring.factories文件加载，并排序和实例化后存到this.initializers）
+		// 加载ApplicationContextInitializer系列初始化器（从spring.factories文件加载，并实例化和排序后存到this.initializers）
 		setInitializers((Collection) getSpringFactoriesInstances(
 				ApplicationContextInitializer.class));
-		// 加载ApplicationListener系列监听器（从spring.factories文件加载，并排序和实例化后存到this.listeners）
+		// 加载ApplicationListener系列监听器（从spring.factories文件加载，并实例化和排序后存到this.listeners）
 		setListeners((Collection) getSpringFactoriesInstances(ApplicationListener.class));
 		// 推断应用入口类（main函数所在类）
 		this.mainApplicationClass = deduceMainApplicationClass();
@@ -330,7 +330,7 @@ public class SpringApplication {
 		Collection<SpringBootExceptionReporter> exceptionReporters = new ArrayList<>();
 		// 配置系统参数"java.awt.headless"
 		configureHeadlessProperty();
-		// 获取SpringApplicationRunListener系列监听器（从spring.factories文件加载，并排序和实例化）
+		// 获取SpringApplicationRunListener系列监听器（从spring.factories文件加载，并实例化和排序）
 		SpringApplicationRunListeners listeners = getRunListeners(args);
 		// 遍历所有SpringApplicationRunListener系列监听器，广播ApplicationStartingEvent
 		listeners.starting();
@@ -341,16 +341,17 @@ public class SpringApplication {
 			// 准备环境（创建、配置、绑定环境、广播ApplicationEnvironmentPreparedEvent）
 			ConfigurableEnvironment environment = prepareEnvironment(listeners,
 					applicationArguments);
+			// 配置忽略Bean信息（从准备好的环境读取配置）
 			configureIgnoreBeanInfo(environment);
 			// 打印Banner
 			Banner printedBanner = printBanner(environment);
 			// 根据应用类型创建上下文
 			context = createApplicationContext();
-			// 获取SpringBootExceptionReporter系列异常收集器（从spring.factories文件加载，并排序和实例化）
+			// 获取SpringBootExceptionReporter系列异常收集器（从spring.factories文件加载，并实例化和排序）
 			exceptionReporters = getSpringFactoriesInstances(
 					SpringBootExceptionReporter.class,
 					new Class[] { ConfigurableApplicationContext.class }, context);
-			// 上下文前置处理（执行ApplicationContextInitializer系列初始化器、广播ApplicationPreparedEvent）
+			// 上下文前置处理（执行ApplicationContextInitializer系列初始化器、加载资源、广播ApplicationPreparedEvent）
 			prepareContext(context, environment, listeners, applicationArguments,
 					printedBanner);
 			// 刷新上下文（）
@@ -363,12 +364,13 @@ public class SpringApplication {
 				new StartupInfoLogger(this.mainApplicationClass)
 						.logStarted(getApplicationLog(), stopWatch);
 			}
-			// 遍历前面设置的ConfigurableApplicationContext监听器，广播ApplicationStartedEvent
+			// 遍历前面设置的ConfigurableApplicationContext监听器，发布ApplicationStartedEvent
 			listeners.started(context);
 			// 按顺序回调实现了ApplicationRunner或CommandLineRunner接口的Runners
 			callRunners(context, applicationArguments);
 		}
 		catch (Throwable ex) {
+			// 处理异常（发布ExitCodeEvent和ApplicationFailedEvent事件、异常收集器处理异常）
 			handleRunFailure(context, ex, exceptionReporters, listeners);
 			throw new IllegalStateException(ex);
 		}
@@ -409,7 +411,7 @@ public class SpringApplication {
 		postProcessApplicationContext(context);
 		// 去重并排序前面获取好的ApplicationContextInitializer初始化器，执行初始化
 		applyInitializers(context);
-		// 遍历前面设置好的SpringApplicationRunListener，但并没有广播（目前什么都没做，貌似为了以后扩展）
+		// 遍历前面设置好的SpringApplicationRunListener，但并没有发布（目前什么都没做，貌似为了以后扩展）
 		listeners.contextPrepared(context);
 		if (this.logStartupInfo) {
 			logStartupInfo(context.getParent() == null);
